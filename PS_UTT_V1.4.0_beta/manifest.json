@@ -1,0 +1,66 @@
+{
+  "id": "com.usagetime.tracker",
+  "name": "Usage Time Tracker",
+  "version": "1.4.0",
+  "main": "bundle.js",
+  "manifestVersion": 5,
+  "icons": [
+    {
+      "width": 23,
+      "height": 23,
+      "path": "icons/icon_23.png",
+      "scale": [1, 2],
+      "theme": ["darkest", "dark", "medium"],
+      "species": ["pluginList"]
+    },
+    {
+      "width": 23,
+      "height": 23,
+      "path": "icons/icon_23.png",
+      "scale": [1, 2],
+      "theme": ["lightest", "light"],
+      "species": ["pluginList"]
+    }
+  ],
+  "host": [
+    {
+      "app": "PS",
+      "minVersion": "23.0.0",
+      "data": {
+        "apiVersion": 2
+      }
+    }
+  ],
+  "entrypoints": [
+    {
+      "type": "panel",
+      "id": "usageTimeTrackerPanel",
+      "label": {
+        "default": "Usage Time Tracker"
+      },
+      "icons": [
+        {
+          "width": 23,
+          "height": 23,
+          "path": "icons/icon_23.png",
+          "scale": [1, 2],
+          "theme": ["darkest", "dark", "medium"]
+        },
+        {
+          "width": 23,
+          "height": 23,
+          "path": "icons/icon_23.png",
+          "scale": [1, 2],
+          "theme": ["lightest", "light"]
+        }
+      ],
+      "minimumSize": {"width": 225, "height": 180},
+      "maximumSize": {"width": 800, "height": 800},
+      "preferredDockedSize": {"width": 240, "height": 220},
+      "preferredFloatingSize": {"width": 240, "height": 220}
+    }
+  ],
+  "requiredPermissions": {
+    "localFileSystem": "plugin"
+  }
+}

@@ -95,16 +95,45 @@ function formatTimeOnly(isoString: string, offsetMinutes?: number): string {
 }
 
 export class ExportService {
-  /**
-   * 将全量数据导出为 CSV
-   */
-  public static exportToCSV(
+  public static exportProjectsToCSV(
     projects: Record<string, Project>,
-    sessionRecords: Record<string, SessionRecord>
+    fileRecords: Record<string, FileRecord>
   ): string {
     const lines: string[] = [];
-    // 添加 UTF-8 BOM，防止 Excel 打开乱码
-    lines.push('\uFEFF工作日期,开始时间,结束时间,项目名称,项目备注,有效工作时长,在线时长,结束原因');
+    lines.push('\uFEFF项目创建时间,最近工作时间,项目名称,项目备注,总在线时长,总有效时长,总步数,关联文件数,关联文件');
+
+    const projectList = Object.values(projects || {}).sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+
+    for (const p of projectList) {
+      const createTime = formatDateTime(p.createdAt);
+      // To get last worked time, we can look at updatedAt or loop through sessions if available, but p.updatedAt is a good proxy. Or we can just use p.updatedAt which is updated on session close. However, Project object usually doesn't have a direct lastWorkedAt unless we're talking about ViewModel. Let's use p.updatedAt for now, or just calculate from sessions if we want it perfect. Actually, in ProjectViewModel it's calculated. I will use formatDateTime(p.updatedAt) for simplicity as it updates on every session close/save.
+      const lastWorked = formatDateTime(p.updatedAt);
+      
+      const pName = `"${(p.name || '').replace(/"/g, '""')}"`;
+      const pNote = `"${(p.note || '').replace(/"/g, '""')}"`;
+      
+      const onl = formatDuration(p.totalOnlineMs);
+      const eff = formatDuration(p.totalEffectiveMs);
+      const steps = p.totalActionSteps || 0;
+      
+      const associatedFiles = Object.values(fileRecords).filter(f => p.documentIds.includes(f.id) || f.projectId === p.id);
+      const fileCount = associatedFiles.length;
+      const fileNames = associatedFiles.map(f => f.displayName).join('; ');
+      const pFiles = `"${fileNames.replace(/"/g, '""')}"`;
+
+      lines.push(`${createTime},${lastWorked},${pName},${pNote},${onl},${eff},${steps},${fileCount},${pFiles}`);
+    }
+
+    return lines.join('\n');
+  }
+
+  public static exportSessionsToCSV(
+    projects: Record<string, Project>,
+    sessionRecords: Record<string, SessionRecord>,
+    fileRecords: Record<string, FileRecord>
+  ): string {
+    const lines: string[] = [];
+    lines.push('\uFEFF工作日期,开始时间,结束时间,文件名称,项目名称,项目备注,在线时长,有效时长,操作步数,结束原因');
 
     const sessions = Object.values(sessionRecords || {}).sort((a, b) => Date.parse(a.startAt) - Date.parse(b.startAt));
 
@@ -116,14 +145,18 @@ export class ExportService {
       const startStr = formatTimeOnly(s.startAt);
       const endStr = formatTimeOnly(s.endAt);
       
+      const file = fileRecords[s.documentId];
+      const fName = `"${(file ? file.displayName : s.documentId).replace(/"/g, '""')}"`;
+      
       const pName = `"${(p.name || '').replace(/"/g, '""')}"`;
       const pNote = `"${(p.note || '').replace(/"/g, '""')}"`;
       
-      const eff = formatDuration(s.effectiveMs);
       const onl = formatDuration(s.onlineMs);
+      const eff = formatDuration(s.effectiveMs);
+      const steps = s.actionSteps || 0;
       const reason = s.endReason;
 
-      lines.push(`${dateStr},${startStr},${endStr},${pName},${pNote},${eff},${onl},${reason}`);
+      lines.push(`${dateStr},${startStr},${endStr},${fName},${pName},${pNote},${onl},${eff},${steps},${reason}`);
     }
 
     return lines.join('\n');

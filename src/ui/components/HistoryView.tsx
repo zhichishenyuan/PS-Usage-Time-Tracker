@@ -140,7 +140,7 @@ const ProjectCard: React.FC<{
             </div>
             <div style={{ flex: '0.5' }}>
               <div style={{ fontSize: '0.8em', color: '#aaa' }}>文件</div>
-              <div style={{ fontSize: '1em', fontWeight: 'bold', color: '#fff' }}>{p.associatedFileCount}</div>
+              <div style={{ fontSize: '1em', fontWeight: 'bold', color: '#bbb' }}>{p.associatedFileCount}</div>
             </div>
           </div>
 
@@ -163,9 +163,9 @@ const ProjectCard: React.FC<{
   );
 };
 
-export const HistoryView: React.FC<HistoryViewProps> = (props) => {
-  const { timelineSessions, projects, activeLiveCard, activeTab, onTabChange, onLoadMore, onBackToStatus, onMergeProjects, onDeleteProject, onEditNote, onNavigate, onUndoMerge } = props;
-  const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([]);
+  export const HistoryView: React.FC<HistoryViewProps> = (props) => {
+    const { timelineSessions, projects, activeLiveCard, activeTab, onTabChange, onLoadMore, onBackToStatus, onMergeProjects, onDeleteProject, onEditNote, onNavigate, onUndoMerge } = props;
+    const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([]);
 
   const sortedItems = [...(timelineSessions.items || [])].sort((a, b) => {
     const tA = new Date(a.startAt).getTime();
@@ -225,9 +225,9 @@ export const HistoryView: React.FC<HistoryViewProps> = (props) => {
           
           {sortedItems.map(item => (
             <div key={item.id} style={{ backgroundColor: 'rgba(255, 255, 255,0.05)', border: '1px solid rgba(255, 255, 255,0.1)', borderRadius: '4px', padding: '8px', marginBottom: '6px' }}>
-              <div style={{ fontSize: '0.85em', color: '#aaa', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <span style={{ backgroundColor: 'rgba(0,0,0,0.3)', color: '#eee', padding: '2px 4px', borderRadius: '2px' }}>{item.dateLabel} {item.timeRangeLabel}</span>
-                <span style={{ color: '#64b5f6', fontWeight: 'bold' }}>{item.projectName}</span>
+              <div style={{ fontSize: '0.85em', color: '#aaa', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'nowrap', marginBottom: '4px' }}>
+                <span style={{ backgroundColor: 'rgba(0,0,0,0.3)', color: '#eee', padding: '2px 4px', borderRadius: '2px', flexShrink: 0, marginRight: '8px' }}>{item.dateLabel} {item.timeRangeLabel}</span>
+                <span style={{ color: '#21c7fa', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right' }}>{item.projectName}</span>
               </div>
               <div style={{ fontSize: '1em', fontWeight: 'bold', marginBottom: '6px', color: '#fff' }}>
                 📄 {item.displayName}
@@ -243,7 +243,7 @@ export const HistoryView: React.FC<HistoryViewProps> = (props) => {
                 </div>
                 <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '2px' }}>
                   <div style={{ fontSize: '0.8em', color: '#aaa' }}>步数</div>
-                  <div style={{ fontSize: '1em', fontWeight: 'bold', color: '#bbb' }}>{item.actionSteps}</div>
+                  <div style={{ fontSize: '1em', fontWeight: 'bold', color: '#ccc' }}>{item.actionSteps}</div>
                 </div>
               </div>
             </div>

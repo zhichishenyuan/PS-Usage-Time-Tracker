@@ -67,7 +67,7 @@ export const StatusView: React.FC<StatusViewProps> = (props: StatusViewProps) =>
           <div style={{ fontSize: '0.9em', color: '#fff', fontWeight: 'bold' }}>
             ⏱️ 当前活跃项目
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255, 255, 255,0.2)', padding: '2px 6px', borderRadius: '8px', fontSize: '0.85em' }}>
+          <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255, 255, 255,0.2)', padding: '2px 6px', borderRadius: '8px', fontSize: '0.9em' }}>
             <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: statusColor, marginRight: '4px', boxShadow: `0 0 4px ${statusColor}` }}></div>
             <span style={{ fontWeight: '500' }}>{statusText}</span>
           </div>
@@ -77,26 +77,26 @@ export const StatusView: React.FC<StatusViewProps> = (props: StatusViewProps) =>
             <div style={{ fontSize: '1.2em', fontWeight: 'bold', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {activeProject.name}
             </div>
-            <div style={{ fontSize: '0.85em', color: '#999', marginBottom: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div style={{ fontSize: '0.85em', color: '#b3b3b3', marginBottom: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               📄 {primaryFile}
             </div>
             
             <div style={{ display: 'flex' }}>
               <div style={{ flex: 1, background: 'rgba(0,0,0,0.2)', padding: '6px', borderRadius: '4px', marginRight: '6px' }}>
-                <div style={{ fontSize: '0.8em', color: '#aaa', marginBottom: '2px' }}>总在线</div>
-                <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#aaa', fontFamily: 'monospace' }}>
+                <div style={{ fontSize: '0.8em', color: '#aaa', marginBottom: '2px' }}>🖼️ 总在线</div>
+                <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#ccc', fontFamily: 'monospace' }}>
                   {activeProject.displayOnlineTime}
                 </div>
               </div>
               <div style={{ flex: 1, background: 'rgba(0,0,0,0.2)', padding: '6px', borderRadius: '4px', marginRight: '6px' }}>
-                <div style={{ fontSize: '0.8em', color: '#aaa', marginBottom: '2px' }}>总步数</div>
+                <div style={{ fontSize: '0.8em', color: '#aaa', marginBottom: '2px' }}>🖱️ 总步数</div>
                 <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#bbb', fontFamily: 'monospace' }}>
-                  🖱️ {activeProject.totalActionSteps} 步
+                  {activeProject.totalActionSteps}
                 </div>
               </div>
               <div style={{ flex: 1, background: 'rgba(0,0,0,0.2)', padding: '6px', borderRadius: '4px' }}>
-                <div style={{ fontSize: '0.8em', color: '#aaa', marginBottom: '2px' }}>有效工作</div>
-                <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#4CAF50', fontFamily: 'monospace' }}>
+                <div style={{ fontSize: '0.8em', color: '#aaa', marginBottom: '2px' }}>🖌️ 有效工作</div>
+                <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#ccc', fontFamily: 'monospace' }}>
                   {activeProject.displayEffectiveTime}
                 </div>
               </div>

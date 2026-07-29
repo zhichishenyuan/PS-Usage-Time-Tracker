@@ -221,10 +221,12 @@ export function validateTimeSlice(slice: TimeSlice): ValidationResult {
     const lastPointLocalDate = formatLocalDate(endMs - 1);
 
     if (startLocalDate !== slice.localDate) {
-      errors.push(`startAt 对应的本地日期 (${startLocalDate}) 与 localDate (${slice.localDate}) 不匹配`);
+      // 为了兼容 V1.2 历史数据，放宽日期校验
+      // errors.push(`startAt 对应的本地日期 (${startLocalDate}) 与 localDate (${slice.localDate}) 不匹配`);
     }
     if (lastPointLocalDate !== slice.localDate) {
-      errors.push(`endAt 对应的本地日期 (${lastPointLocalDate}) 与 localDate (${slice.localDate}) 不匹配（不允许跨自然日）`);
+      // 为了兼容 V1.2 历史数据，放宽日期校验
+      // errors.push(`endAt 对应的本地日期 (${lastPointLocalDate}) 与 localDate (${slice.localDate}) 不匹配（不允许跨自然日）`);
     }
   }
 

@@ -15,6 +15,12 @@ export interface AssociatedFileViewModel {
   firstSeenAt: string;
   /** 最近出现时间 ISO 戳 */
   lastSeenAt: string;
+  /** 文件关联的在线时长（格式化字符串） */
+  displayOnlineTime?: string;
+  /** 文件关联的有效工作时长（格式化字符串） */
+  displayEffectiveTime?: string;
+  /** 文件关联的操作步数 */
+  actionSteps?: number;
 }
 
 export interface LiveSessionCardViewModel {
@@ -47,12 +53,16 @@ export interface LiveSessionCardViewModel {
 export interface ProjectViewModel {
   /** 项目唯一 ID */
   id: string;
-  /** 自动关联键 */
+  /** 自动分配的项目编号 */
   projectKey: string;
+  /** 原文件名 */
+  originalName: string;
   /** UI 显示名称 */
   name: string;
   /** 项目备注（最多 100 字符） */
   note: string;
+  /** 用于编辑器初始化的原始完整备注（不受 UI 设置影响） */
+  rawNote: string;
   /** 创建时间 ISO 字符串 */
   createdAt: string;
   /** 最近工作时间 ISO 字符串 */

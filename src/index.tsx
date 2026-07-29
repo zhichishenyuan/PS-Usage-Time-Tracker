@@ -89,6 +89,7 @@ let rootElementWrapper: HTMLElement | null = null;
 let renderApp: () => void = () => {};
 
 let lastActivityMs = Date.now();
+let lastTickMs = Date.now();
 let currentSessionState: 'WORKING' | 'IDLE' | 'FROZEN' | 'NO_DOCUMENT' = 'NO_DOCUMENT';
 
 function generateUUID(): string {
@@ -250,6 +251,7 @@ function handleDocumentSwitch(doc: { documentId: string, displayName: string, fi
     };
     currentSessionState = 'WORKING';
     lastActivityMs = now;
+    lastTickMs = now;
   }
   
   flushToDisk().catch(e => console.error(e));
@@ -358,8 +360,6 @@ async function bootApp(rootElement: HTMLElement) {
     }
   }
 
-  let lastTickMs = Date.now();
-
   renderApp = () => {
     if (currentSnapshot.activeRuntimeSession) {
       currentSnapshot.activeRuntimeSession.state = currentSessionState as any;
@@ -391,15 +391,28 @@ async function bootApp(rootElement: HTMLElement) {
               const idleMs = now - lastActivityMs;
               const oldState = currentSessionState;
 
-              if (idleMs < currentSnapshot.settings.idleThresholdMs) {
+              const idleThresh = currentSnapshot.settings.idleThresholdMs;
+              const freezeThresh = currentSnapshot.settings.freezeThresholdMs;
+              const prevIdleMs = idleMs - delta;
+
+              if (idleMs <= idleThresh) {
                 currentSessionState = 'WORKING';
                 currentSnapshot.activeRuntimeSession.segmentOnlineMs += delta;
                 currentSnapshot.activeRuntimeSession.segmentEffectiveMs += delta;
-              } else if (idleMs < currentSnapshot.settings.freezeThresholdMs) {
+              } else if (idleMs <= freezeThresh) {
                 currentSessionState = 'IDLE';
                 currentSnapshot.activeRuntimeSession.segmentOnlineMs += delta;
+                if (prevIdleMs < idleThresh) {
+                  currentSnapshot.activeRuntimeSession.segmentEffectiveMs += (idleThresh - prevIdleMs);
+                }
               } else {
                 currentSessionState = 'FROZEN';
+                if (prevIdleMs < idleThresh) {
+                  currentSnapshot.activeRuntimeSession.segmentEffectiveMs += (idleThresh - prevIdleMs);
+                  currentSnapshot.activeRuntimeSession.segmentOnlineMs += (freezeThresh - prevIdleMs);
+                } else if (prevIdleMs < freezeThresh) {
+                  currentSnapshot.activeRuntimeSession.segmentOnlineMs += (freezeThresh - prevIdleMs);
+                }
               }
               
               currentSnapshot.activeRuntimeSession.state = currentSessionState as any;
@@ -544,7 +557,7 @@ async function bootApp(rootElement: HTMLElement) {
             renderApp();
           }
         }}
-        onExportTxt={async () => {
+        onExportTxt={async (type?: 'work' | 'project') => {
           const uxp = require('uxp');
           const fs = uxp.storage.localFileSystem;
           const folder = await fs.getFolder();
@@ -557,11 +570,18 @@ async function bootApp(rootElement: HTMLElement) {
           const min = String(now.getMinutes()).padStart(2, '0');
           const sec = String(now.getSeconds()).padStart(2, '0');
           const ts = `${year}-${month}${day}-${hour}${min}${sec}`;
-          const fileName = `UTT_Export_${ts}.csv`;
           
-          const file = await folder.createFile(fileName, { overwrite: true });
-          const csvData = ExportService.exportToCSV(currentSnapshot.projects, currentSnapshot.sessionRecords);
-          await file.write(csvData);
+          if (type === 'project') {
+            const projectFileName = `UTT_Project_Export_${ts}.csv`;
+            const projectFile = await folder.createFile(projectFileName, { overwrite: true });
+            const projectCsvData = ExportService.exportProjectsToCSV(currentSnapshot.projects, currentSnapshot.fileRecords);
+            await projectFile.write(projectCsvData);
+          } else {
+            const workFileName = `UTT_Work_Export_${ts}.csv`;
+            const workFile = await folder.createFile(workFileName, { overwrite: true });
+            const workCsvData = ExportService.exportSessionsToCSV(currentSnapshot.projects, currentSnapshot.sessionRecords, currentSnapshot.fileRecords);
+            await workFile.write(workCsvData);
+          }
         }}
       />,
       rootElementWrapper

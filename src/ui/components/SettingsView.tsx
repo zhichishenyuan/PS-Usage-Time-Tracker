@@ -5,7 +5,7 @@ export interface SettingsViewProps {
   settings: Settings;
   onSaveSettings: (settings: Settings) => Promise<void>;
   onBackToStatus: () => void;
-  onExportTxt: () => Promise<void> | void;
+  onExportTxt: (type: 'work' | 'project') => Promise<void> | void;
   onResetDefaults?: () => void;
 }
 
@@ -33,6 +33,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [exportStatus, setExportStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [exportErrorMsg, setExportErrorMsg] = useState('');
   const [resetState, setResetState] = useState<0 | 1 | 2>(0);
+  const [showExportOptions, setShowExportOptions] = useState(false);
 
   const cTextPrimary = `rgba(255, 255, 255, 1)`;
   const cTextSecondary = `rgba(255, 255, 255, 0.6)`;
@@ -367,28 +368,56 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
         {/* 导出卡片 */}
         <div style={{ background: cBoxBg, border: `1px solid ${cBoxBorder}`, borderRadius: '4px', padding: '12px' }}>
-          <div onClick={async () => {
-            if (exportStatus !== 'idle') return;
-            try {
-              await onExportTxt();
-              setExportStatus('success');
-              setTimeout(() => setExportStatus('idle'), 3000);
-            } catch (e: any) {
-              if (e.message && !e.message.toLowerCase().includes('cancel')) {
-                setExportStatus('error');
-                setExportErrorMsg(e.message);
-                setTimeout(() => setExportStatus('idle'), 3000);
-              }
-            }
-          }} style={{ 
-            ...btnStyle, 
-            background: exportStatus === 'success' ? cGreenBg : (exportStatus === 'error' ? 'rgba(244, 67, 54, 0.4)' : cBlueBg), 
-            color: cActiveText, 
-            border: `1px solid ${exportStatus === 'success' ? cGreenBorder : (exportStatus === 'error' ? 'rgba(244, 67, 54, 0.7)' : cBlueBorder)}`, 
-            fontWeight: 'bold'
-          }}>
-            {exportStatus === 'success' ? '✅ 报表导出成功' : (exportStatus === 'error' ? `❌ 导出失败: ${exportErrorMsg}` : '📤 导出历史报表 (CSV)')}
-          </div>
+          {showExportOptions ? (
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div onClick={async () => {
+                try {
+                  await onExportTxt('work');
+                  setExportStatus('success');
+                  setShowExportOptions(false);
+                  setTimeout(() => setExportStatus('idle'), 3000);
+                } catch (e: any) {
+                  if (e.message && !e.message.toLowerCase().includes('cancel')) {
+                    setExportStatus('error');
+                    setExportErrorMsg(e.message);
+                    setShowExportOptions(false);
+                    setTimeout(() => setExportStatus('idle'), 3000);
+                  }
+                }
+              }} style={{ ...btnStyle, flex: 1, marginRight: '8px', background: cBlueBg, color: cActiveText, border: `1px solid ${cBlueBorder}`, fontWeight: 'bold' }}>
+                ⏱️ 导出时间
+              </div>
+              <div onClick={async () => {
+                try {
+                  await onExportTxt('project');
+                  setExportStatus('success');
+                  setShowExportOptions(false);
+                  setTimeout(() => setExportStatus('idle'), 3000);
+                } catch (e: any) {
+                  if (e.message && !e.message.toLowerCase().includes('cancel')) {
+                    setExportStatus('error');
+                    setExportErrorMsg(e.message);
+                    setShowExportOptions(false);
+                    setTimeout(() => setExportStatus('idle'), 3000);
+                  }
+                }
+              }} style={{ ...btnStyle, flex: 1, background: cBlueBg, color: cActiveText, border: `1px solid ${cBlueBorder}`, fontWeight: 'bold' }}>
+                📂 导出项目
+              </div>
+            </div>
+          ) : (
+            <div onClick={() => {
+              if (exportStatus === 'idle') setShowExportOptions(true);
+            }} style={{ 
+              ...btnStyle, 
+              background: exportStatus === 'success' ? cGreenBg : (exportStatus === 'error' ? 'rgba(244, 67, 54, 0.4)' : cBlueBg), 
+              color: cActiveText, 
+              border: `1px solid ${exportStatus === 'success' ? cGreenBorder : (exportStatus === 'error' ? 'rgba(244, 67, 54, 0.7)' : cBlueBorder)}`, 
+              fontWeight: 'bold'
+            }}>
+              {exportStatus === 'success' ? '✅ 报表导出成功' : (exportStatus === 'error' ? `❌ 导出失败: ${exportErrorMsg}` : '📤 导出历史报表 (CSV)')}
+            </div>
+          )}
         </div>
 
 
@@ -397,7 +426,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
       {/* 底部版权信息 */}
       <div style={{ textAlign: 'center', marginTop: '3px', fontSize: '0.85em', color: cTextSecondary, letterSpacing: '0.5px' }}>
-        V1.3.1 <span style={{ margin: '0 8px', opacity: 0.5 }}>|</span> by Zhichi
+        V1.4.0(beta) <span style={{ margin: '0 8px', opacity: 0.5 }}>|</span> by Zhichi
       </div>
       
     </div>

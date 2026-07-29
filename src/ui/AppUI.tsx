@@ -20,7 +20,7 @@ export interface AppUIProps {
   onSaveSettings?: (newSettings: Settings) => Promise<void> | void;
   onMergeProjects?: (primaryProjectId: string, mergedProjectIds: string[]) => Promise<void> | void;
   onDeleteProject?: (projectId: string) => Promise<void> | void;
-  onExportTxt?: () => Promise<void> | void;
+  onExportTxt?: (type: 'work' | 'project') => Promise<void> | void;
   onResetDefaults?: () => Promise<void> | void;
   onUndoMerge?: (projectId: string) => Promise<void> | void;
 }
@@ -118,7 +118,7 @@ export const AppUI: React.FC<AppUIProps> = (props: AppUIProps) => {
       {currentView === 'detail' && detailProjectId && (
         <ProjectDetailView
           project={projects.find(p => p.id === detailProjectId)!}
-          onBack={() => setCurrentView(previousView)}
+          onBack={() => setCurrentView('history')}
           onEditNote={(id: string) => {
             setEditingProjectId(id);
             setPreviousView('detail');
@@ -131,9 +131,10 @@ export const AppUI: React.FC<AppUIProps> = (props: AppUIProps) => {
       {currentView === 'note' && (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', padding: '20px' }}>
           <NoteEditor
+            key={editingProject ? editingProject.id : 'unknown'}
             projectId={editingProject ? editingProject.id : 'proj_unknown'}
             projectName={editingProject ? editingProject.name : '未知项目'}
-            initialNote={editingProject ? editingProject.note : ''}
+            initialNote={editingProject ? editingProject.rawNote : ''}
             onSave={async (pid: string, note: string) => {
               if (onUpdateNote) {
                 await onUpdateNote(pid, note);
@@ -153,9 +154,9 @@ export const AppUI: React.FC<AppUIProps> = (props: AppUIProps) => {
               await onSaveSettings(newSettings);
             }
           }}
-          onExportTxt={async () => {
+          onExportTxt={async (type: 'work' | 'project') => {
             if (onExportTxt) {
-              await onExportTxt();
+              await onExportTxt(type);
             }
           }}
           onResetDefaults={async () => {

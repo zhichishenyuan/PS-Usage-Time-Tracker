@@ -117,21 +117,51 @@ export class ReadModelService {
       }
 
       const associatedFiles: AssociatedFileViewModel[] = Array.from(uniqueFilesMap.values())
-        .map((file) => ({
-          id: file.id,
-          displayName: file.displayName,
-          fileName: file.fileName,
-          isSaved: file.isSaved,
-          firstSeenAt: file.firstSeenAt,
-          lastSeenAt: file.lastSeenAt,
-        }));
+        .map((file) => {
+          let fileOnlineMs = 0;
+          let fileEffectiveMs = 0;
+          let fileActionSteps = 0;
+
+          // 从历史 session 中统计
+          for (const sId of project.sessions || []) {
+            const s = snapshot.sessionRecords[sId];
+            if (s && s.documentId === file.id) {
+              fileOnlineMs += s.onlineMs || 0;
+              fileEffectiveMs += s.effectiveMs || 0;
+              fileActionSteps += s.actionSteps || 0;
+            }
+          }
+
+          // 按照用户需求，即使是当前活跃的文件，也不进行实时更新，仅统计历史固化数据
+          /*
+          if (isCurrentlyActive && activeRuntime && activeRuntime.documentId === file.id) {
+            fileOnlineMs += activeRuntime.segmentOnlineMs || 0;
+            fileEffectiveMs += activeRuntime.segmentEffectiveMs || 0;
+            fileActionSteps += activeRuntime.segmentActionSteps || 0;
+          }
+          */
+
+          return {
+            id: file.id,
+            displayName: file.displayName,
+            fileName: file.fileName,
+            isSaved: file.isSaved,
+            firstSeenAt: file.firstSeenAt,
+            lastSeenAt: file.lastSeenAt,
+            displayOnlineTime: formatDurationMs(fileOnlineMs),
+            displayEffectiveTime: formatDurationMs(fileEffectiveMs),
+            actionSteps: fileActionSteps,
+          };
+        });
 
       // 计算实时 LiveSessionCard
       let liveSessionCard: LiveSessionCardViewModel | null = null;
       const isNoteFirst = snapshot.settings?.projectNameDisplayMode === 'note-first';
       let displayName = project.name;
+      let displayNote = project.note || '';
       if (isNoteFirst && project.note && project.note.trim() !== '') {
         displayName = project.note;
+        displayNote = ''; // 既然备注已经作为标题显示，下方就不再显示重复的备注栏
       }
 
       if (isCurrentlyActive && activeRuntime) {
@@ -169,9 +199,10 @@ export class ReadModelService {
         }
       }
 
-      if (isCurrentlyActive) {
-        if (now > latestMs) {
-          latestMs = now;
+      if (isCurrentlyActive && activeRuntime) {
+        const activeStartMs = new Date(activeRuntime.startAt).getTime();
+        if (activeStartMs > latestMs) {
+          latestMs = activeStartMs;
         }
       }
 
@@ -189,8 +220,10 @@ export class ReadModelService {
       const viewModel: ProjectViewModel = {
         id: project.id,
         projectKey: project.projectKey,
+        originalName: project.name,
         name: displayName,
-        note: project.note || '',
+        note: displayNote,
+        rawNote: project.note || '',
         createdAt: project.createdAt,
         lastWorkedAt,
         effectiveMs,
@@ -256,18 +289,50 @@ export class ReadModelService {
       return b.id.localeCompare(a.id);
     });
 
-    const total = records.length;
+    // 2.5 合并同项目且时间相近的相邻片段 (间隔 <= 3分钟)
+    const mergedRecords: typeof records = [];
+    for (const record of records) {
+      if (mergedRecords.length === 0) {
+        mergedRecords.push({ ...record });
+        continue;
+      }
+      
+      const last = mergedRecords[mergedRecords.length - 1];
+      if (last.projectId === record.projectId) {
+        const gapMs = new Date(last.startAt).getTime() - new Date(record.endAt).getTime();
+        
+        // 允许合并：间隔 <= 3 分钟 (180,000 毫秒)。如果 gapMs < 0 说明时间有重叠，也应该合并。
+        if (gapMs <= 180000) {
+          // 合并时间区间：选取更早的 startAt 和 更晚的 endAt
+          last.startAt = new Date(Math.min(new Date(last.startAt).getTime(), new Date(record.startAt).getTime())).toISOString();
+          last.endAt = new Date(Math.max(new Date(last.endAt).getTime(), new Date(record.endAt).getTime())).toISOString();
+          
+          last.onlineMs += record.onlineMs;
+          last.effectiveMs += record.effectiveMs;
+          last.actionSteps = (last.actionSteps || 0) + (record.actionSteps || 0);
+          continue;
+        }
+      }
+      mergedRecords.push({ ...record });
+    }
+
+    const total = mergedRecords.length;
 
     // 3. 切片分页
     const startIndex = (page - 1) * pageSize;
     const endIndex = Math.min(startIndex + pageSize, total);
-    const slicedRecords = startIndex < total ? records.slice(startIndex, endIndex) : [];
+    const slicedRecords = startIndex < total ? mergedRecords.slice(startIndex, endIndex) : [];
 
     const items: HistorySessionViewModel[] = slicedRecords.map((record) => {
       const project = snapshot.projects[record.projectId];
       const doc = snapshot.fileRecords[record.documentId];
 
-      const projectName = project ? project.name : '未知项目';
+      const isNoteFirst = snapshot.settings?.projectNameDisplayMode === 'note-first';
+      let projectName = project ? project.name : '未知项目';
+      if (project && isNoteFirst && project.note && project.note.trim() !== '') {
+        projectName = project.note;
+      }
+      
       const displayName = doc ? doc.displayName : (project ? project.name + ' (恢复)' : '未知文件');
 
       return {
