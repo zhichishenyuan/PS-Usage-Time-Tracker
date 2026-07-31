@@ -9,6 +9,79 @@ export interface SettingsViewProps {
   onResetDefaults?: () => void;
 }
 
+const SafeInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => {
+  const [isEditing, setIsEditing] = useState(false);
+
+  if (isEditing) {
+    return (
+      <input 
+        {...props} 
+        autoFocus
+        onBlur={(e) => {
+          setIsEditing(false);
+          if (props.onBlur) props.onBlur(e);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            setIsEditing(false);
+            if (props.onBlur) props.onBlur(e as any);
+          }
+          if (props.onKeyDown) props.onKeyDown(e);
+        }}
+      />
+    );
+  }
+
+  return (
+    <div 
+      onClick={() => setIsEditing(true)}
+      style={{ 
+        ...(props.style as any), 
+        display: 'inline-flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', // 确保纯文本状态下居中
+        cursor: 'text',
+        backgroundColor: 'rgba(255, 255, 255, 0.05)', // 模拟输入框背景
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        overflow: 'hidden'
+      }}
+      title="点击修改"
+    >
+      {props.value}
+    </div>
+  );
+};
+
+const IncButton = ({ label, onClick, isLeft = false, btnStyle }: { label: string, onClick: () => void, isLeft?: boolean, btnStyle: React.CSSProperties }) => {
+  const [flash, setFlash] = useState(false);
+  const handleClick = () => {
+    setFlash(true);
+    setTimeout(() => setFlash(false), 100);
+    onClick();
+  };
+  return (
+    <div 
+      onClick={handleClick}
+      style={{
+        ...btnStyle, 
+        width: '22px', 
+        height: '22px', 
+        padding: 0, 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        marginRight: isLeft ? '2px' : '0',
+        fontSize: '1.2em', 
+        fontWeight: 'bold',
+        background: flash ? 'rgba(33, 150, 243, 0.6)' : btnStyle.background,
+        
+      }}
+    >
+      {label}
+    </div>
+  );
+};
+
 export const SettingsView: React.FC<SettingsViewProps> = ({
   settings,
   onSaveSettings,
@@ -168,16 +241,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     };
     return (
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <div onClick={() => handleInc(type === 'idle' ? -15 : -1)} style={{ ...btnStyle, padding: '2px 8px', marginRight: '6px' }}>-</div>
-        <input 
-          type="number" 
-          step="1"
+        <IncButton label="-" onClick={() => handleInc(type === 'idle' ? -15 : -1)} isLeft={true} btnStyle={btnStyle} />
+        <SafeInput 
+          type="text"
           value={valStr} 
           onChange={(e) => setValStr(e.target.value)}
           onBlur={handleBlur}
-          style={{ width: '36px', textAlign: 'center', fontWeight: 'bold', background: 'rgba(0,0,0,0.3)', border: `1px solid ${cBoxBorder}`, color: cTextPrimary, borderRadius: '4px', outline: 'none', marginRight: '6px' }}
+          style={{ width: '26px', height: '22px', boxSizing: 'border-box', padding: '0', margin: 0, marginLeft: 0, marginRight: '2px', fontWeight: 'bold', color: cTextPrimary, borderRadius: '4px', outline: 'none', textAlign: 'center' }}
         />
-        <div onClick={() => handleInc(type === 'idle' ? 15 : 1)} style={{ ...btnStyle, padding: '2px 8px' }}>+</div>
+        <IncButton label="+" onClick={() => handleInc(type === 'idle' ? 15 : 1)} btnStyle={btnStyle} />
       </div>
     );
   };
@@ -202,22 +274,32 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   );
 
   return (
-    <div style={{ padding: '8px', fontFamily: 'system-ui, sans-serif', color: cTextPrimary, fontSize: '11px', height: '100vh', overflowY: 'auto', boxSizing: 'border-box' }}>
+    <div style={{ padding: 0, fontFamily: 'system-ui, sans-serif', color: cTextPrimary, fontSize: '11px', height: '100vh', overflowY: 'auto', boxSizing: 'border-box' }}>
       
-      {/* 顶栏 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <div onClick={onBackToStatus} style={btnStyle}>&lt; 返回</div>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          {message && <span style={{ color: '#4CAF50', fontSize: '12px', fontWeight: 'bold', marginRight: '8px' }}>{message}</span>}
-          <div style={{ fontWeight: 'bold' }}>⚙️ 设置</div>
+      {/* 吸顶保护层（包裹器） */}
+      <div style={{ 
+        position: 'sticky', top: 0, zIndex: 999, 
+        backgroundColor: 'var(--uxp-host-background-color, #323232)',
+        width: '100%', display: 'block', boxSizing: 'border-box',
+        padding: '8px 24px 12px 8px' // 右侧 24px 避开物理滚动条
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '24px' }}>
+          <div onClick={onBackToStatus} style={btnStyle}>&lt; 返回</div>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {message && <span style={{ color: '#4CAF50', fontSize: '12px', fontWeight: 'bold', marginRight: '8px' }}>{message}</span>}
+            <div style={{ fontWeight: 'bold' }}>⚙️ 设置</div>
+          </div>
         </div>
       </div>
+      
+      {/* 物理占位符，弥补 UXP sticky 丢失的文档流高度 (8 + 24 + 12 = 44px) */}
+      <div style={{ height: '44px', flexShrink: 0 }}></div>
 
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', padding: '0 8px 8px 8px' }}>
         
         {/* 阈值卡片 */}
         <div style={{ background: cBoxBg, border: `1px solid ${cBoxBorder}`, borderRadius: '4px', padding: '12px', marginBottom: '8px' }}>
-          <div style={{ fontSize: '0.9em', color: cTextPrimary, marginBottom: '12px', fontWeight: 'bold' }}>统计阈值</div>
+          <div style={{ fontSize: '1em', color: 'rgba(255, 255, 255, 0.9)', marginBottom: '12px', fontWeight: 'bold' }}>统计阈值</div>
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <div>
@@ -238,7 +320,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
         {/* 显示卡片 */}
         <div style={{ background: cBoxBg, border: `1px solid ${cBoxBorder}`, borderRadius: '4px', padding: '12px', marginBottom: '8px' }}>
-          <div style={{ fontSize: '0.9em', color: cTextPrimary, marginBottom: '12px', fontWeight: 'bold' }}>界面显示</div>
+          <div style={{ fontSize: '1em', color: 'rgba(255, 255, 255, 0.9)', marginBottom: '12px', fontWeight: 'bold' }}>界面显示</div>
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: showSummary ? '12px' : '0' }}>
             <div style={{ color: cTextPrimary }}>工时汇总区域</div>
@@ -266,7 +348,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
         {/* 数据管理卡片 */}
         <div style={{ background: cBoxBg, border: `1px solid ${cBoxBorder}`, borderRadius: '4px', padding: '12px', marginBottom: '8px' }}>
-          <div style={{ fontSize: '0.9em', color: cTextPrimary, marginBottom: '12px', fontWeight: 'bold' }}>数据清理</div>
+          <div style={{ fontSize: '1em', color: 'rgba(255, 255, 255, 0.9)', marginBottom: '12px', fontWeight: 'bold' }}>数据清理</div>
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <div style={{ color: cTextPrimary }}>保留策略</div>
@@ -280,14 +362,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', marginLeft: '12px', paddingLeft: '8px', borderLeft: `2px solid ${cBoxBorder}` }}>
               <div style={{ color: cTextSecondary, fontSize: '0.9em' }}>保留天数 (7-365天)</div>
               <div style={{ display: 'flex', alignItems: 'center' }}>
-                <input 
-                  type="number"
+                <SafeInput 
+                  type="text"
                   value={customDaysStr}
                   onChange={(e) => handleCustomDaysChange(e.target.value)}
                   onBlur={handleCustomDaysBlur}
-                  style={{ width: '32px', height: '22px', padding: '0', boxSizing: 'border-box', textAlign: 'center', fontWeight: 'bold', background: 'rgba(0,0,0,0.3)', border: `1px solid ${cBoxBorder}`, color: cTextPrimary, borderRadius: '4px', outline: 'none' }}
+                  style={{ width: '26px', height: '22px', margin: 0, boxSizing: 'border-box', padding: '0', fontWeight: 'bold', color: cTextPrimary, borderRadius: '4px', outline: 'none', textAlign: 'center' }}
                 />
-                <div style={{ color: cTextSecondary, marginLeft: '6px', fontSize: '0.9em' }}>天</div>
+                <div style={{ color: cTextSecondary, marginLeft: '4px', fontSize: '0.9em' }}>天</div>
               </div>
             </div>
           )}
@@ -420,15 +502,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           )}
         </div>
 
-
+        {/* 底部版权信息 */}
+        <div style={{ textAlign: 'center', marginTop: '3px', fontSize: '0.85em', color: cTextSecondary, letterSpacing: '0.5px' }}>
+          V1.4.2(beta) <span style={{ margin: '0 8px', opacity: 0.5 }}>|</span> by Zhichi
+        </div>
         
       </div>
-
-      {/* 底部版权信息 */}
-      <div style={{ textAlign: 'center', marginTop: '3px', fontSize: '0.85em', color: cTextSecondary, letterSpacing: '0.5px' }}>
-        V1.4.0(beta) <span style={{ margin: '0 8px', opacity: 0.5 }}>|</span> by Zhichi
-      </div>
-      
     </div>
   );
 };

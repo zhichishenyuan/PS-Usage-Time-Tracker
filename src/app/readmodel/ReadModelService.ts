@@ -318,10 +318,10 @@ export class ReadModelService {
 
     const total = mergedRecords.length;
 
-    // 3. 切片分页
-    const startIndex = (page - 1) * pageSize;
-    const endIndex = Math.min(startIndex + pageSize, total);
-    const slicedRecords = startIndex < total ? mergedRecords.slice(startIndex, endIndex) : [];
+    // 3. 切片分页 (为了支持 Load More 模式，永远从 0 开始切割，直到当前页的末尾)
+    const startIndex = 0;
+    const endIndex = Math.min(page * pageSize, total);
+    const slicedRecords = mergedRecords.slice(startIndex, endIndex);
 
     const items: HistorySessionViewModel[] = slicedRecords.map((record) => {
       const project = snapshot.projects[record.projectId];

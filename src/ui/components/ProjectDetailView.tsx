@@ -97,8 +97,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ project, o
         {project.associatedFiles.length === 0 ? (
           <div style={{ color: '#888', fontStyle: 'italic' }}>无关联文件</div>
         ) : (
-          project.associatedFiles.map(file => (
-            <div key={file.id} style={{ display: 'flex', alignItems: 'center', marginBottom: '8px', paddingBottom: '8px', borderBottom: `1px solid rgba(255,255,255,0.15)` }}>
+          project.associatedFiles.map((file, index) => (
+            <div key={file.id} style={{ display: 'flex', alignItems: 'center', marginBottom: index === project.associatedFiles.length - 1 ? '0' : '8px', paddingBottom: index === project.associatedFiles.length - 1 ? '0' : '8px', borderBottom: index === project.associatedFiles.length - 1 ? 'none' : `1px solid rgba(255,255,255,0.15)` }}>
               <div style={{ marginRight: '8px', fontSize: '1.8em' }}>{file.isSaved ? '📄' : '📝'}</div>
               <div style={{ flex: 1, overflow: 'hidden' }}>
                 <div style={{ color: '#fff', fontSize: '1.1em', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{file.displayName}</div>

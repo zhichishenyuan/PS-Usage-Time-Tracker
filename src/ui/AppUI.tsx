@@ -84,7 +84,7 @@ export const AppUI: React.FC<AppUIProps> = (props: AppUIProps) => {
   const editingProject = projects.find((p) => p.id === editingProjectId) || activeProject;
 
   return (
-    <div className="utt-app-ui" data-testid="app-ui-container" style={{ width: '100%', height: '100%', fontFamily: 'sans-serif' }}>
+    <div className="utt-app-ui" data-testid="app-ui-container" style={{ width: '100%', height: '100%', fontFamily: 'sans-serif', backgroundColor: 'var(--uxp-host-background-color, #323232)' }}>
       {currentView === 'status' && (
         <StatusView
           activeProject={activeProject}

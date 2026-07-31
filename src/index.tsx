@@ -336,7 +336,8 @@ async function bootApp(rootElement: HTMLElement) {
       try {
         ps.action.addNotificationListener([ev], async (event: string, descriptor: any) => {
           lastActivityMs = Date.now();
-          if (event === 'historyStateChanged' && currentSnapshot.activeRuntimeSession && currentSessionState === 'WORKING') {
+          if (event === 'historyStateChanged' && currentSnapshot.activeRuntimeSession) {
+            currentSessionState = 'WORKING';
             currentSnapshot.activeRuntimeSession.segmentActionSteps = (currentSnapshot.activeRuntimeSession.segmentActionSteps || 0) + 1;
           }
           if (['select', 'open', 'make', 'close', 'save', 'saveAs'].includes(event)) {

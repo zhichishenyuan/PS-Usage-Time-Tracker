@@ -80,32 +80,28 @@ export const NoteEditor: React.FC<NoteEditorProps> = (props: NoteEditorProps) =>
       </div>
 
       {/* 文本输入框 */}
-      <textarea
-        data-testid="note-textarea"
+      <input
+        type="text"
+        data-testid="note-input"
         maxLength={100}
-        rows={4}
         value={noteText}
         disabled={isSubmitting}
         onChange={handleTextChange}
-        placeholder="请输入项目备注（最多 100 字）"
+        placeholder="请输入备注"
         style={{ 
           width: '100%', 
-          boxSizing: 'border-box', 
-          padding: '10px', 
+          boxSizing: 'border-box',
+          padding: '8px 10px', 
           borderRadius: '6px', 
-          border: '1px solid rgba(255, 255, 255, 0.2)', 
-          background: 'rgba(0, 0, 0, 0.3)',
           color: '#fff',
           fontSize: '11px',
           fontFamily: 'system-ui, sans-serif',
-          fontStyle: 'normal',
-          outline: 'none',
-          resize: 'none'
+          outline: 'none'
         }}
       />
 
       {/* 实时字数统计 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '6px' }}>
         <span data-testid="char-count" style={{ fontSize: '11px', color: noteText.length >= 100 ? '#ff8a80' : '#888' }}>
           {noteText.length} / 100
         </span>
@@ -119,11 +115,11 @@ export const NoteEditor: React.FC<NoteEditorProps> = (props: NoteEditorProps) =>
       )}
 
       {/* 按钮组 */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
         <div
           data-testid="cancel-btn"
           onClick={isSubmitting ? undefined : onCancel}
-          style={{ ...btnStyle, opacity: isSubmitting ? 0.5 : 1 }}
+          style={{ ...btnStyle, opacity: isSubmitting ? 0.5 : 1, marginRight: '10px', width: '60px', textAlign: 'center' }}
         >
           取消
         </div>
@@ -136,10 +132,11 @@ export const NoteEditor: React.FC<NoteEditorProps> = (props: NoteEditorProps) =>
             color: '#81C784', 
             border: '1px solid rgba(76, 175, 80, 0.4)', 
             fontWeight: 'bold',
-            opacity: isSubmitting ? 0.5 : 1
+            opacity: isSubmitting ? 0.5 : 1,
+            width: '60px', textAlign: 'center'
           }}
         >
-          {isSubmitting ? '保存中...' : '保存备注'}
+          {isSubmitting ? '保存中...' : '保存'}
         </div>
       </div>
     </div>
