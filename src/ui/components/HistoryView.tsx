@@ -24,9 +24,9 @@ export const LiveSessionCard: React.FC<{ liveCard: LiveSessionCardViewModel }> =
     padding: '8px',
     marginBottom: '8px'
   }}>
-    <div style={{ fontWeight: 'bold', color: '#4CAF50', display: 'flex', justifyContent: 'space-between', fontSize: '1em', marginBottom: '4px' }}>
-      <span>⚡ {liveCard.displayName}</span>
-      <span style={{ fontSize: '0.9em', backgroundColor: 'rgba(76, 175, 80, 0.15)', padding: '2px 6px', borderRadius: '4px' }}>进行中...</span>
+    <div style={{ fontWeight: 'bold', color: '#4CAF50', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '1em', marginBottom: '4px' }}>
+      <span style={{ flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginRight: '8px' }}>⚡ {liveCard.displayName}</span>
+      <span style={{ fontSize: '0.9em', backgroundColor: 'rgba(76, 175, 80, 0.15)', padding: '2px 6px', borderRadius: '4px', flexShrink: 0 }}>进行中...</span>
     </div>
     <div style={{ display: 'flex' }}>
       <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '2px', marginRight: '4px' }}>
@@ -261,7 +261,7 @@ const ProjectCard: React.FC<{
                 <span style={{ backgroundColor: 'rgba(0,0,0,0.3)', color: '#eee', padding: '2px 4px', borderRadius: '2px', flexShrink: 0, marginRight: '8px' }}>{item.dateLabel} {item.timeRangeLabel}</span>
                 <span style={{ color: '#21c7fa', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right' }}>{item.projectName}</span>
               </div>
-              <div style={{ fontSize: '1em', fontWeight: 'bold', marginBottom: '6px', color: '#fff' }}>
+              <div style={{ fontSize: '1em', fontWeight: 'bold', marginBottom: '6px', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 📄 {item.displayName}
               </div>
               <div style={{ display: 'flex' }}>

@@ -114,8 +114,8 @@ export function createInitialAppSnapshot(nowIso?: string): AppSnapshot {
     lastFlushCompletedAt: now,
     nextUntitledSequence: 1,
     settings: {
-      idleThresholdMs: 60000,
-      freezeThresholdMs: 600000,
+      idleThresholdMs: 30000,
+      freezeThresholdMs: 60000,
       showSummary: true,
       summaryMode: 'today',
       autoAssociate: true,
